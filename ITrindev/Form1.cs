@@ -38,12 +38,20 @@ namespace ITrindev
 
         private void displayButton_Click( object sender, EventArgs e )
         {
+            outputTextBox.AppendText("Married Taxpayers:" + Environment.NewLine);
+            DisplayAllTaxpayers(marriedTaxpayers);
 
+            outputTextBox.AppendText(Environment.NewLine + "Unmarried Taxapyers:" + Environment.NewLine);
+            DisplayAllTaxpayers(unmarriedTaxpayers);
         }
 
         private void summaryButton_Click( object sender, EventArgs e )
         {
+            int marriedTaxpayerCount, unmarriedTaxpayerCount;
 
+            marriedTaxpayerCount = marriedTaxpayers.Count();
+            unmarriedTaxpayerCount = unmarriedTaxpayers.Count();
+            DisplaySummary(marriedTaxpayerCount, unmarriedTaxpayerCount);
         }
 
         private void resetButton_Click( object sender, EventArgs e )
@@ -85,6 +93,9 @@ namespace ITrindev
             { marriedTaxpayers.Add(taxpayer); }
             else
             { unmarriedTaxpayers.Add(taxpayer); }
+
+            // outputs
+            outputTextBox.AppendText(taxpayer.Info());
 
             // form maintenance
             DeactivateEnterDataControls();
@@ -140,6 +151,8 @@ namespace ITrindev
 
         private void GetReadyForNewInput()
         {
+            // clear input textboxes and checkbox and focus on the Enter Data Button
+
             nameTextBox.Clear();
             salaryTextBox.Clear();
             investmentTextBox.Clear();
@@ -148,6 +161,25 @@ namespace ITrindev
             marriedCheckBox.Checked = false;
 
             enterDataButton.Focus();
+        }
+
+        private void DisplaySummary(int marriedTaxpayerCount, int unmarriedTaxpayerCount)
+        {
+            // display the number of married and unmarried taxpayers
+
+            outputTextBox.AppendText("Summary: " + Environment.NewLine
+                            + "Married Taxpayers: " + marriedTaxpayerCount.ToString() + Environment.NewLine
+                            + "Unmarried Taxpayers: " + unmarriedTaxpayerCount.ToString() + Environment.NewLine);
+        }
+
+        private void DisplayAllTaxpayers(List<Taxpayer> taxpayerList)
+        {
+            // for each taxpayer in a list, display their information
+
+            foreach (Taxpayer taxpayer in taxpayerList)
+            {
+                outputTextBox.AppendText(taxpayer.Info());
+            }
         }
 
         // ------------------------------------- end ---------------------------------------------

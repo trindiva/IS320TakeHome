@@ -39,7 +39,18 @@ namespace ITrindev
         // computational methods
 
         // output methods
+        public string Info()
+        {
+            string marriedString;
 
+            if (married)
+            { marriedString = "Married"; }
+            else
+            { marriedString = "Unmarried"; }
+
+            return name + "," + salary.ToString("C") + "," + investmentIncome.ToString("C") + "," 
+                + exemptions.ToString() + "," + marriedString + Environment.NewLine;
+        }
 
     }
 }
