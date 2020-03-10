@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.IO;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -12,8 +13,14 @@ namespace ITrindev
 {
     public partial class Form1 : Form
     {
-        List<Taxpayer> marriedTaxpayers = new List<Taxpayer>(); // list of married taxpayers
-        List<Taxpayer> unmarriedTaxpayers = new List<Taxpayer>(); // list of unmarried taxpayers
+        private List<Taxpayer> marriedTaxpayers = new List<Taxpayer>(); // list of married taxpayers
+        private List<Taxpayer> unmarriedTaxpayers = new List<Taxpayer>(); // list of unmarried taxpayers
+
+        private List<Taxpayer> unsavedMarriedTaxpayers = new List<Taxpayer>(); // list of unsaved married taxpayers
+        private List<Taxpayer> unsavedUnmarriedTaxpayers = new List<Taxpayer>(); // list of unsaved unmarried taxpayers
+
+        private string taxpayerFile = ""; // the name of the file where taxpayers will be saved
+        private bool newDataHasBeenAdded = false; // tracks whether we have the most recent data saved
 
 
         public Form1()
@@ -33,37 +40,57 @@ namespace ITrindev
 
         private void saveButton_Click( object sender, EventArgs e )
         {
-
+            SaveData();
         }
 
         private void displayButton_Click( object sender, EventArgs e )
         {
-            outputTextBox.AppendText("Married Taxpayers:" + Environment.NewLine);
-            DisplayAllTaxpayers(marriedTaxpayers);
+            if (ListsAreEmpty())
+            { NoDataAvailable(); }
 
-            outputTextBox.AppendText(Environment.NewLine + "Unmarried Taxapyers:" + Environment.NewLine);
-            DisplayAllTaxpayers(unmarriedTaxpayers);
+            else
+            {
+                outputTextBox.AppendText("Married Taxpayers:" + Environment.NewLine);
+                DisplayAllTaxpayers(marriedTaxpayers);
+
+                outputTextBox.AppendText(Environment.NewLine + "Unmarried Taxapyers:" + Environment.NewLine);
+                DisplayAllTaxpayers(unmarriedTaxpayers);
+            }
         }
 
         private void summaryButton_Click( object sender, EventArgs e )
         {
-            int marriedTaxpayerCount, unmarriedTaxpayerCount;
+            if (ListsAreEmpty())
+            { NoDataAvailable(); }
 
-            marriedTaxpayerCount = marriedTaxpayers.Count();
-            unmarriedTaxpayerCount = unmarriedTaxpayers.Count();
-            DisplaySummary(marriedTaxpayerCount, unmarriedTaxpayerCount);
+            else
+            {
+                // display the number of married and unmarried taxpayers
+
+                outputTextBox.AppendText(Taxpayer.Summary());
+            }
         }
 
         private void resetButton_Click( object sender, EventArgs e )
         {
-
+            if (ListsAreEmpty())
+            { NoDataAvailable(); }
+            else
+            {
+                SaveData();
+                ClearLists();
+                outputTextBox.Clear();
+            }
+            DeactivateEnterDataControls();
+            GetReadyForNewInput();
         }
 
         private void exitButton_Click( object sender, EventArgs e )
         {
             // exit application
-            marriedTaxpayers.Clear();
-            unmarriedTaxpayers.Clear();
+            SaveData();
+
+            ClearLists();
             Application.Exit();
         }
 
@@ -90,14 +117,21 @@ namespace ITrindev
 
             // add object to list
             if (married)
-            { marriedTaxpayers.Add(taxpayer); }
+            {
+                marriedTaxpayers.Add(taxpayer);
+                unsavedMarriedTaxpayers.Add(taxpayer);
+            }
             else
-            { unmarriedTaxpayers.Add(taxpayer); }
+            {
+                unmarriedTaxpayers.Add(taxpayer);
+                unsavedUnmarriedTaxpayers.Add(taxpayer);
+            }
 
             // outputs
             outputTextBox.AppendText(taxpayer.Info());
 
             // form maintenance
+            newDataHasBeenAdded = true;
             DeactivateEnterDataControls();
             GetReadyForNewInput();
         }
@@ -163,13 +197,10 @@ namespace ITrindev
             enterDataButton.Focus();
         }
 
-        private void DisplaySummary(int marriedTaxpayerCount, int unmarriedTaxpayerCount)
+        private void ClearLists()
         {
-            // display the number of married and unmarried taxpayers
-
-            outputTextBox.AppendText("Summary: " + Environment.NewLine
-                            + "Married Taxpayers: " + marriedTaxpayerCount.ToString() + Environment.NewLine
-                            + "Unmarried Taxpayers: " + unmarriedTaxpayerCount.ToString() + Environment.NewLine);
+            marriedTaxpayers.Clear();
+            unmarriedTaxpayers.Clear();
         }
 
         private void DisplayAllTaxpayers(List<Taxpayer> taxpayerList)
@@ -180,6 +211,72 @@ namespace ITrindev
             {
                 outputTextBox.AppendText(taxpayer.Info());
             }
+        }
+
+        private void NoDataAvailable()
+        {
+            outputTextBox.AppendText("No data available." + Environment.NewLine);
+        }
+
+        private bool ListsAreEmpty()
+        {
+            if (marriedTaxpayers.Count() == 0 && unmarriedTaxpayers.Count() == 0)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private void SaveData()
+        {
+            String taxpayerLine;
+            SaveFileDialog taxpayerFileChooser;
+
+            StreamWriter fileWriter;
+
+            if (ListsAreEmpty())
+            { NoDataAvailable(); }
+
+            else if (newDataHasBeenAdded == true)
+            {
+                if (taxpayerFile == "")
+                {
+                    taxpayerFileChooser = new SaveFileDialog();
+                    taxpayerFileChooser.Filter = "All text files|*.txt"; //*.txt;*.csv
+                    taxpayerFileChooser.ShowDialog();
+                    taxpayerFile = taxpayerFileChooser.FileName;
+                    taxpayerFileChooser.Dispose();
+                }
+
+                fileWriter = new StreamWriter(taxpayerFile, true);
+
+                foreach (Taxpayer taxpayer in unsavedMarriedTaxpayers)
+                {
+                    taxpayerLine = taxpayer.Save();
+
+                    fileWriter.WriteLine(taxpayerLine);
+                }
+
+                foreach (Taxpayer taxpayer in unsavedUnmarriedTaxpayers)
+                {
+                    taxpayerLine = taxpayer.Save();
+
+                    fileWriter.WriteLine(taxpayerLine);
+                }
+
+                fileWriter.Close();
+                fileWriter.Dispose();  //Destructor
+
+                MessageBox.Show("Data has been saved to " + taxpayerFile);
+                ResetSaveTrackers();
+            }
+        }
+
+        private void ResetSaveTrackers()
+        {
+            newDataHasBeenAdded = false;
+            unsavedMarriedTaxpayers.Clear();
+            unsavedUnmarriedTaxpayers.Clear();
         }
 
         // ------------------------------------- end ---------------------------------------------

@@ -15,6 +15,10 @@ namespace ITrindev
         private int exemptions;
         private bool married;
 
+        // statics
+        private static int marriedTaxpayerCount = 0; //  the number of married taxpayers
+        private static int unmarriedTaxpayerCount = 0; // the number of unmarried taxpayers
+
         // constructor
         public Taxpayer(string name, double salary, double investmentIncome, int exemptions, bool married)
         {
@@ -37,6 +41,11 @@ namespace ITrindev
         }
 
         // computational methods
+        public static void ResetStatics()
+        {
+            marriedTaxpayerCount = 0;
+            unmarriedTaxpayerCount = 0;
+        }
 
         // output methods
         public string Info()
@@ -50,6 +59,19 @@ namespace ITrindev
 
             return name + "," + salary.ToString("C") + "," + investmentIncome.ToString("C") + "," 
                 + exemptions.ToString() + "," + marriedString + Environment.NewLine;
+        }
+
+        public static string Summary()
+        {
+            return "Summary: " + Environment.NewLine
+                + "Married Taxpayers: " + marriedTaxpayerCount.ToString() + Environment.NewLine
+                + "Unmarried Taxpayers: " + unmarriedTaxpayerCount.ToString() + Environment.NewLine;
+        }
+
+        public string Save()
+        {
+            return name + "," + salary.ToString("C") + "," + investmentIncome.ToString("C") + ","
+                + exemptions.ToString() + "," + married.ToString();
         }
 
     }
