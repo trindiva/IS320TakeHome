@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.enterDataButton = new System.Windows.Forms.Button();
             this.loadButton = new System.Windows.Forms.Button();
             this.saveButton = new System.Windows.Forms.Button();
@@ -48,6 +49,15 @@
             this.submitButton = new System.Windows.Forms.Button();
             this.label6 = new System.Windows.Forms.Label();
             this.outputTextBox = new System.Windows.Forms.TextBox();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.nameDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.salaryDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.investmentIncomeDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.exemptionsDataGridViewTextBoxColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.marriedDataGridViewCheckBoxColumn = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.taxpayerBindingSource = new System.Windows.Forms.BindingSource(this.components);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.taxpayerBindingSource)).BeginInit();
             this.SuspendLayout();
             // 
             // enterDataButton
@@ -190,7 +200,7 @@
             this.exemptionLabel.Name = "exemptionLabel";
             this.exemptionLabel.Size = new System.Drawing.Size(94, 13);
             this.exemptionLabel.TabIndex = 16;
-            this.exemptionLabel.Text = "Exemptions (0 - 3):";
+            this.exemptionLabel.Text = "Exemptions (0 - 2):";
             this.exemptionLabel.Visible = false;
             // 
             // investmentLabel
@@ -227,7 +237,7 @@
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(679, 428);
+            this.label6.Location = new System.Drawing.Point(667, 774);
             this.label6.Name = "label6";
             this.label6.Size = new System.Drawing.Size(121, 13);
             this.label6.TabIndex = 18;
@@ -242,11 +252,68 @@
             this.outputTextBox.Size = new System.Drawing.Size(620, 266);
             this.outputTextBox.TabIndex = 18;
             // 
+            // dataGridView1
+            // 
+            this.dataGridView1.AutoGenerateColumns = false;
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Columns.AddRange(new System.Windows.Forms.DataGridViewColumn[] {
+            this.nameDataGridViewTextBoxColumn,
+            this.salaryDataGridViewTextBoxColumn,
+            this.investmentIncomeDataGridViewTextBoxColumn,
+            this.exemptionsDataGridViewTextBoxColumn,
+            this.marriedDataGridViewCheckBoxColumn});
+            this.dataGridView1.DataSource = this.taxpayerBindingSource;
+            this.dataGridView1.Location = new System.Drawing.Point(41, 479);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.ReadOnly = true;
+            this.dataGridView1.Size = new System.Drawing.Size(543, 267);
+            this.dataGridView1.TabIndex = 19;
+            // 
+            // nameDataGridViewTextBoxColumn
+            // 
+            this.nameDataGridViewTextBoxColumn.DataPropertyName = "Name";
+            this.nameDataGridViewTextBoxColumn.HeaderText = "Name";
+            this.nameDataGridViewTextBoxColumn.Name = "nameDataGridViewTextBoxColumn";
+            this.nameDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // salaryDataGridViewTextBoxColumn
+            // 
+            this.salaryDataGridViewTextBoxColumn.DataPropertyName = "Salary";
+            this.salaryDataGridViewTextBoxColumn.HeaderText = "Salary";
+            this.salaryDataGridViewTextBoxColumn.Name = "salaryDataGridViewTextBoxColumn";
+            this.salaryDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // investmentIncomeDataGridViewTextBoxColumn
+            // 
+            this.investmentIncomeDataGridViewTextBoxColumn.DataPropertyName = "InvestmentIncome";
+            this.investmentIncomeDataGridViewTextBoxColumn.HeaderText = "InvestmentIncome";
+            this.investmentIncomeDataGridViewTextBoxColumn.Name = "investmentIncomeDataGridViewTextBoxColumn";
+            this.investmentIncomeDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // exemptionsDataGridViewTextBoxColumn
+            // 
+            this.exemptionsDataGridViewTextBoxColumn.DataPropertyName = "Exemptions";
+            this.exemptionsDataGridViewTextBoxColumn.HeaderText = "Exemptions";
+            this.exemptionsDataGridViewTextBoxColumn.Name = "exemptionsDataGridViewTextBoxColumn";
+            this.exemptionsDataGridViewTextBoxColumn.ReadOnly = true;
+            // 
+            // marriedDataGridViewCheckBoxColumn
+            // 
+            this.marriedDataGridViewCheckBoxColumn.DataPropertyName = "Married";
+            this.marriedDataGridViewCheckBoxColumn.HeaderText = "Married";
+            this.marriedDataGridViewCheckBoxColumn.Name = "marriedDataGridViewCheckBoxColumn";
+            this.marriedDataGridViewCheckBoxColumn.ReadOnly = true;
+            // 
+            // taxpayerBindingSource
+            // 
+            this.taxpayerBindingSource.DataSource = typeof(ITrindev.Taxpayer);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(800, 796);
+            this.Controls.Add(this.dataGridView1);
             this.Controls.Add(this.outputTextBox);
             this.Controls.Add(this.label6);
             this.Controls.Add(this.submitButton);
@@ -270,6 +337,8 @@
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Form1";
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.taxpayerBindingSource)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -297,6 +366,13 @@
         private System.Windows.Forms.Button submitButton;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox outputTextBox;
+        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridViewTextBoxColumn nameDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn salaryDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn investmentIncomeDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewTextBoxColumn exemptionsDataGridViewTextBoxColumn;
+        private System.Windows.Forms.DataGridViewCheckBoxColumn marriedDataGridViewCheckBoxColumn;
+        private System.Windows.Forms.BindingSource taxpayerBindingSource;
     }
 }
 

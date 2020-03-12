@@ -1,4 +1,35 @@
-﻿using System.IO;
+﻿/* Created by Ivan Trindev - Take Home, 3/11/2020
+    An app that caluclates the tax based on salary, investment income, exemption count, and marital status
+ 
+    Enter Data:
+        Inputs: name, salary, investment income, exemption count, marital status
+
+    Load Data:
+        Load data from an outside source
+ 
+    Save:
+        Save all unsaved data to a chosen file.
+        Allows to change the file that you save to.
+
+    Summary:
+        - Married taxpayer count
+        - Unmarried taxpayer count
+        - Average Tax
+
+    Display:
+        For each married taxpayer and then each unmarried taxpayer:
+        - Name
+        - Total income
+        - Tax
+    Reset:
+        Reset data for new batch of inputs; asks whether to save if there is unsaved data
+
+    Exit:
+        Exits the app; asks whether to save if there is unsaved data
+    
+ */
+
+using System.IO;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -20,7 +51,6 @@ namespace ITrindev
         private List<Taxpayer> unsavedUnmarriedTaxpayers = new List<Taxpayer>(); // list of unsaved unmarried taxpayers
 
         private string taxpayerFile = ""; // the name of the file where taxpayers will be saved
-        private bool newDataHasBeenAdded = false; // tracks whether we have the most recent data saved
 
 
         public Form1()
@@ -30,21 +60,73 @@ namespace ITrindev
 
         private void enterDataButton_Click( object sender, EventArgs e )
         {
+            // Activate controls to enter data
+
             ActivateEnterDataControls();
         }
 
         private void loadButton_Click( object sender, EventArgs e )
         {
+            // try to load data from outside source
+
+            String taxpayerFile;
+
+            try
+            {
+                OpenFileDialog taxpayerFileChooser = new OpenFileDialog();
+                taxpayerFileChooser.Filter = "All text files|*.txt";
+                taxpayerFileChooser.ShowDialog();
+                taxpayerFile = taxpayerFileChooser.FileName;
+                taxpayerFileChooser.Dispose();
+
+
+                using (StreamReader fileReader = new StreamReader(taxpayerFile))
+                {
+                    while (fileReader.EndOfStream == false)
+                    {
+                        String[] properties;
+                        String line;
+                        string name;
+                        double salary;
+                        double investmentIncome;
+                        int exemptions;
+                        bool married;
+
+                        line = fileReader.ReadLine();
+                        properties = line.Split(',');
+
+                        name = properties[0];
+                        salary = double.Parse(properties[1]);
+                        investmentIncome = double.Parse(properties[2]);
+                        exemptions = int.Parse(properties[3]);
+                        married = bool.Parse(properties[4]);
+
+                        Taxpayer taxpayer;
+                        taxpayer = new Taxpayer(name, salary, investmentIncome, exemptions, married);
+                        ListSort(married, taxpayer);
+                    }
+                }
+            }
+
+            // if there is an error in the loading (user cancels load or the data is not in the proper format, dispaly message saying that data wasn't loaded
+            catch
+            {
+                MessageBox.Show("No Data Imported");
+            }
 
         }
 
         private void saveButton_Click( object sender, EventArgs e )
         {
+            // Save data if there is unsaved data
+
             SaveData();
         }
 
         private void displayButton_Click( object sender, EventArgs e )
         {
+            // if there is nothing to display, then say that there is no data
+
             if (ListsAreEmpty())
             { NoDataAvailable(); }
 
@@ -52,43 +134,45 @@ namespace ITrindev
             {
                 outputTextBox.AppendText("Married Taxpayers:" + Environment.NewLine);
                 DisplayAllTaxpayers(marriedTaxpayers);
+                outputTextBox.AppendText(Environment.NewLine);
 
-                outputTextBox.AppendText(Environment.NewLine + "Unmarried Taxapyers:" + Environment.NewLine);
+                outputTextBox.AppendText("Unmarried Taxapyers:" + Environment.NewLine);
                 DisplayAllTaxpayers(unmarriedTaxpayers);
+                outputTextBox.AppendText(Environment.NewLine);
             }
         }
 
         private void summaryButton_Click( object sender, EventArgs e )
         {
+            // display the number of married and unmarried taxpayers and average tax or say there is no data
+
             if (ListsAreEmpty())
             { NoDataAvailable(); }
 
             else
-            {
-                // display the number of married and unmarried taxpayers
-
+            { 
                 outputTextBox.AppendText(Taxpayer.Summary());
             }
         }
 
         private void resetButton_Click( object sender, EventArgs e )
         {
+            // ask whether to save and then reset for new input; say there is no data if there is none
+
             if (ListsAreEmpty())
             { NoDataAvailable(); }
             else
             {
-                SaveData();
+                AskWhetherToSave();
                 ClearLists();
                 outputTextBox.Clear();
             }
-            DeactivateEnterDataControls();
-            GetReadyForNewInput();
         }
 
         private void exitButton_Click( object sender, EventArgs e )
         {
-            // exit application
-            SaveData();
+            // exit application after asking whether to save unsaved data
+            AskWhetherToSave();
 
             ClearLists();
             Application.Exit();
@@ -112,28 +196,27 @@ namespace ITrindev
             exemptions = int.Parse(exemptionTextBox.Text);
             married = marriedCheckBox.Checked;
 
-            // create object
-            taxpayer = new Taxpayer(name, salary, investmentIncome, exemptions, married);
-
-            // add object to list
-            if (married)
+            if (validExemptionCount(exemptions))
             {
-                marriedTaxpayers.Add(taxpayer);
-                unsavedMarriedTaxpayers.Add(taxpayer);
+                // create object
+                taxpayer = new Taxpayer(name, salary, investmentIncome, exemptions, married);
+
+                // add object to list
+                ListSort(married, taxpayer);
+
+                // outputs - COMMENTED OUT FOR FINAL VERSION
+                //outputTextBox.AppendText(taxpayer.Info());
+
+                // form maintenance
+                DeactivateEnterDataControls();
+                GetReadyForNewInput();
             }
             else
             {
-                unmarriedTaxpayers.Add(taxpayer);
-                unsavedUnmarriedTaxpayers.Add(taxpayer);
+                MessageBox.Show("Please enter a valid number of exemptions (0 - 3).");
+                exemptionTextBox.Clear();
+                exemptionTextBox.Focus();
             }
-
-            // outputs
-            outputTextBox.AppendText(taxpayer.Info());
-
-            // form maintenance
-            newDataHasBeenAdded = true;
-            DeactivateEnterDataControls();
-            GetReadyForNewInput();
         }
 
         // ----------------------------------- my methods ----------------------------------------
@@ -199,8 +282,12 @@ namespace ITrindev
 
         private void ClearLists()
         {
+            // clear lists and binding source
+
             marriedTaxpayers.Clear();
             unmarriedTaxpayers.Clear();
+            ResetSaveTrackers();
+            taxpayerBindingSource.Clear();
         }
 
         private void DisplayAllTaxpayers(List<Taxpayer> taxpayerList)
@@ -209,17 +296,20 @@ namespace ITrindev
 
             foreach (Taxpayer taxpayer in taxpayerList)
             {
-                outputTextBox.AppendText(taxpayer.Info());
+                outputTextBox.AppendText(taxpayer.Display());
             }
         }
 
         private void NoDataAvailable()
         {
-            outputTextBox.AppendText("No data available." + Environment.NewLine);
+            // write that there is no data available
+            outputTextBox.AppendText("No data available." + Environment.NewLine + Environment.NewLine);
         }
 
         private bool ListsAreEmpty()
         {
+            // check whether the data lists are empty
+
             if (marriedTaxpayers.Count() == 0 && unmarriedTaxpayers.Count() == 0)
             {
                 return true;
@@ -229,6 +319,8 @@ namespace ITrindev
 
         private void SaveData()
         {
+            // check if there is data to save. if there is, then try to save it; if there is an exception (user cancels) then say that the data was not saved
+
             String taxpayerLine;
             SaveFileDialog taxpayerFileChooser;
 
@@ -237,46 +329,111 @@ namespace ITrindev
             if (ListsAreEmpty())
             { NoDataAvailable(); }
 
-            else if (newDataHasBeenAdded == true)
+            else if (unsavedMarriedTaxpayers.Count() > 0 || unsavedUnmarriedTaxpayers.Count() > 0)
             {
-                if (taxpayerFile == "")
+                try
                 {
-                    taxpayerFileChooser = new SaveFileDialog();
-                    taxpayerFileChooser.Filter = "All text files|*.txt"; //*.txt;*.csv
-                    taxpayerFileChooser.ShowDialog();
-                    taxpayerFile = taxpayerFileChooser.FileName;
-                    taxpayerFileChooser.Dispose();
+                    if (taxpayerFile == "")
+                    {
+                        taxpayerFileChooser = new SaveFileDialog();
+                        taxpayerFileChooser.Filter = "All text files|*.txt"; //*.txt;*.csv
+                        taxpayerFileChooser.ShowDialog();
+                        taxpayerFile = taxpayerFileChooser.FileName;
+                        taxpayerFileChooser.Dispose();
+                    }
+                    else
+                    {
+                        DialogResult dialogResult = MessageBox.Show("Would you like to save to a different file?", "New Output File?", MessageBoxButtons.YesNo);
+                        if (dialogResult == DialogResult.Yes)
+                        {
+                            taxpayerFileChooser = new SaveFileDialog();
+                            taxpayerFileChooser.Filter = "All text files|*.txt"; //*.txt;*.csv
+                            taxpayerFileChooser.ShowDialog();
+                            taxpayerFile = taxpayerFileChooser.FileName;
+                            taxpayerFileChooser.Dispose();
+                        }
+                    }
+
+                    fileWriter = new StreamWriter(taxpayerFile, true);
+
+                    foreach (Taxpayer taxpayer in unsavedMarriedTaxpayers)
+                    {
+                        taxpayerLine = taxpayer.Save();
+
+                        fileWriter.WriteLine(taxpayerLine);
+                    }
+
+                    foreach (Taxpayer taxpayer in unsavedUnmarriedTaxpayers)
+                    {
+                        taxpayerLine = taxpayer.Save();
+
+                        fileWriter.WriteLine(taxpayerLine);
+                    }
+
+                    fileWriter.Close();
+                    fileWriter.Dispose();  //Destructor
+
+                    MessageBox.Show("Data has been saved to " + taxpayerFile);
+                    ResetSaveTrackers();
                 }
-
-                fileWriter = new StreamWriter(taxpayerFile, true);
-
-                foreach (Taxpayer taxpayer in unsavedMarriedTaxpayers)
+                catch
                 {
-                    taxpayerLine = taxpayer.Save();
-
-                    fileWriter.WriteLine(taxpayerLine);
+                    MessageBox.Show("Data Not Saved");
                 }
-
-                foreach (Taxpayer taxpayer in unsavedUnmarriedTaxpayers)
-                {
-                    taxpayerLine = taxpayer.Save();
-
-                    fileWriter.WriteLine(taxpayerLine);
-                }
-
-                fileWriter.Close();
-                fileWriter.Dispose();  //Destructor
-
-                MessageBox.Show("Data has been saved to " + taxpayerFile);
-                ResetSaveTrackers();
             }
         }
 
         private void ResetSaveTrackers()
         {
-            newDataHasBeenAdded = false;
+            // clear only the lists that check if something has been saved
+
             unsavedMarriedTaxpayers.Clear();
             unsavedUnmarriedTaxpayers.Clear();
+        }
+
+        private bool validExemptionCount(int exemptionCount)
+        {
+            // check if the user has inputed a valid exemption count
+
+            if (exemptionCount >= 0 && exemptionCount <= 2)
+            { return true; }
+            return false;
+        }
+
+        private void ListSort(bool isMarried, Taxpayer newTaxpayer)
+        {
+            // sort the objects into the proper list based off marital status
+
+            if (isMarried)
+            {
+                marriedTaxpayers.Add(newTaxpayer);
+                unsavedMarriedTaxpayers.Add(newTaxpayer);
+            }
+            else
+            {
+                unmarriedTaxpayers.Add(newTaxpayer);
+                unsavedUnmarriedTaxpayers.Add(newTaxpayer);
+            }
+
+            taxpayerBindingSource.Add(newTaxpayer);
+        }
+
+        private void AskWhetherToSave()
+        {
+            // ask the user if they want to save before reseting or exiting
+
+            if (unsavedMarriedTaxpayers.Count() + unsavedUnmarriedTaxpayers.Count() > 0)
+            {
+                DialogResult dialogResult = MessageBox.Show("Would you like to save?", "Save Data?", MessageBoxButtons.YesNo);
+                if (dialogResult == DialogResult.Yes)
+                {
+                    SaveData();
+                }
+                else
+                {
+                    MessageBox.Show("Data Not Saved");
+                }
+            }
         }
 
         // ------------------------------------- end ---------------------------------------------
